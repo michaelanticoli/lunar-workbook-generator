@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Lunar Workbook Generator</title>
+</head>
+<body>
+  <h1>Lunar Workbook Generator</h1>
+  <input type="file" id="csvFile" accept=".csv"><br><br>
+  <button id="generate">Generate Covers</button>
+  <div id="output"></div>
+
+<script>
+document.getElementById("generate").addEventListener("click", async () => {
+    const fileInput = document.getElementById("csvFile");
+    if (!fileInput.files.length) {
+        alert("Please upload your CSV file first.");
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        const csvData = e.target.result;
+        const rows = csvData.split("\n").slice(1);
+        for (const row of rows) {
+            if (!row.trim()) continue;
+            const [title] = row.split(",");
+            const prompt = `Lunar Workbook Cover for ${title}, minimal, astrological style, high quality`;
+            const res = await fetch("/api/generate", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ prompt })
+            });
+            const data = await res.json();
+            const img = document.createElement("img");
+            img.src = data.url;
+            img.width = 400;
+            document.getElementById("output").appendChild(img);
+        }
+    };
+    reader.readAsText(fileInput.files[0]);
+});
+</script>
+</body>
+</html>
