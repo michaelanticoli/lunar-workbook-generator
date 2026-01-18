@@ -24,7 +24,8 @@ async function handler(req, res) {
 
   if (!r.ok) {
     const error = await r.text();
-    return res.status(500).json({ error: `OpenAI request failed: ${error}` });
+    console.error("OpenAI request failed", error);
+    return res.status(500).json({ error: "Failed to generate image" });
   }
 
   const result = await r.json();
