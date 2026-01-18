@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const handler = require("./generate");
 
 const app = express();
@@ -10,6 +11,7 @@ const DEFAULT_MAX_REQUESTS = 10;
 const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS) || DEFAULT_WINDOW_MS;
 const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX) || DEFAULT_MAX_REQUESTS;
 const rateLimits = new Map();
+const indexHtml = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 
 app.use(express.json());
 
@@ -43,7 +45,7 @@ setInterval(() => {
 }, WINDOW_MS).unref();
 
 app.get("/", rateLimit, (_req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.type("html").send(indexHtml);
 });
 
 app.post("/api/generate", rateLimit, async (req, res) => {
