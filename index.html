@@ -24,7 +24,10 @@ document.getElementById("generate").addEventListener("click", async () => {
         const rows = csvData.split("\n").slice(1);
         for (const row of rows) {
             if (!row.trim()) continue;
-            const [title] = row.split(",");
+            const cells = row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+            const rawTitle = (cells[0] || "").trim();
+            const title = rawTitle.replace(/^"(.*)"$/, "$1").replace(/""/g, "\"");
+            if (!title) continue;
             const prompt = `Lunar Workbook Cover for ${title}, minimal, astrological style, high quality`;
             const res = await fetch("/api/generate", {
                 method: "POST",

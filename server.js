@@ -5,8 +5,10 @@ const handler = require("./generate");
 const app = express();
 const port = process.env.PORT || 3000;
 app.set("trust proxy", true);
-const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS) || 60 * 1000;
-const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX) || 10;
+const DEFAULT_WINDOW_MS = 60 * 1000;
+const DEFAULT_MAX_REQUESTS = 10;
+const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS) || DEFAULT_WINDOW_MS;
+const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX) || DEFAULT_MAX_REQUESTS;
 const rateLimits = new Map();
 
 app.use(express.json());
@@ -16,7 +18,10 @@ app.get("/", (_req, res) => {
 });
 
 function rateLimit(req, res, next) {
-  const ip = req.ip || req.socket?.remoteAddress || "unknown";
+  const ip = req.ip || req.socket?.remoteAddress;
+  if (!ip) {
+    return res.status(400).json({ error: "Could not determine client address" });
+  }
   const now = Date.now();
   const record = rateLimits.get(ip) || { count: 0, start: now };
   if (now - record.start > WINDOW_MS) {
@@ -32,6 +37,7 @@ function rateLimit(req, res, next) {
 }
 
 setInterval(() => {
+  if (!rateLimits.size) return;
   const now = Date.now();
   for (const [ip, record] of rateLimits.entries()) {
     if (now - record.start > WINDOW_MS) {

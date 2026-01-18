@@ -29,7 +29,7 @@ async function handler(req, res) {
   }
 
   const result = await r.json();
-  const first = result && result.data && result.data.length ? result.data[0] : null;
+  const first = result?.data?.[0] || null;
   if (!first || !first.url) {
     console.error("OpenAI response missing image URL", result);
     return res.status(500).json({ error: "Failed to generate image" });
