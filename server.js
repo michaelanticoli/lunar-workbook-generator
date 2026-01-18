@@ -1,9 +1,6 @@
 const express = require("express");
 const path = require("path");
 const handler = require("./generate");
-if (typeof handler !== "function") {
-  throw new Error("generate handler must export a function");
-}
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,6 +13,9 @@ app.get("/", (_req, res) => {
 
 app.post("/api/generate", async (req, res) => {
   try {
+    if (typeof handler !== "function") {
+      throw new Error("generate handler must export a function");
+    }
     await handler(req, res);
   } catch (err) {
     console.error("Image generation failed", err);
