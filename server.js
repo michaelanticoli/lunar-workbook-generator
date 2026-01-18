@@ -23,6 +23,10 @@ app.post("/api/generate", async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Lunar Workbook Generator running on http://localhost:${port}`);
+});
+
+server.on("error", (err) => {
+  console.error("Server failed to start", err);
 });
