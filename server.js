@@ -4,8 +4,8 @@ const handler = require("./generate");
 
 const app = express();
 const port = process.env.PORT || 3000;
-const WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS = 10;
+const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS) || 60 * 1000;
+const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX) || 10;
 const rateLimits = new Map();
 
 app.use(express.json());
@@ -15,7 +15,7 @@ app.get("/", (_req, res) => {
 });
 
 function rateLimit(req, res, next) {
-  const ip = req.ip || req.connection?.remoteAddress || "unknown";
+  const ip = req.ip || req.socket?.remoteAddress || "unknown";
   const now = Date.now();
   const record = rateLimits.get(ip) || { count: 0, start: now };
   if (now - record.start > WINDOW_MS) {
@@ -29,6 +29,15 @@ function rateLimit(req, res, next) {
   }
   next();
 }
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of rateLimits.entries()) {
+    if (now - record.start > WINDOW_MS) {
+      rateLimits.delete(ip);
+    }
+  }
+}, WINDOW_MS).unref();
 
 app.post("/api/generate", rateLimit, async (req, res) => {
   try {
