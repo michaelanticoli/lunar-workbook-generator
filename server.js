@@ -4,6 +4,7 @@ const handler = require("./generate");
 
 const app = express();
 const port = process.env.PORT || 3000;
+app.set("trust proxy", true);
 const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS) || 60 * 1000;
 const MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX) || 10;
 const rateLimits = new Map();
@@ -42,7 +43,7 @@ setInterval(() => {
 app.post("/api/generate", rateLimit, async (req, res) => {
   try {
     if (typeof handler !== "function") {
-      throw new Error("generate handler must export a function");
+      throw new Error("generate module must export a function (CommonJS)");
     }
     await handler(req, res);
   } catch (err) {

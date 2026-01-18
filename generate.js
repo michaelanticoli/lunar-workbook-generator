@@ -6,7 +6,7 @@ async function handler(req, res) {
   }
 
   if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({ error: "OPENAI_API_KEY is not configured" });
+    return res.status(503).json({ error: "OPENAI_API_KEY is not configured" });
   }
 
   const r = await fetch("https://api.openai.com/v1/images/generations", {
