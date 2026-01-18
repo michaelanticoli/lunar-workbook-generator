@@ -13,6 +13,7 @@
 <script>
 document.getElementById("generate").addEventListener("click", async () => {
     const fileInput = document.getElementById("csvFile");
+    const output = document.getElementById("output");
     if (!fileInput.files.length) {
         alert("Please upload your CSV file first.");
         return;
@@ -31,10 +32,16 @@ document.getElementById("generate").addEventListener("click", async () => {
                 body: JSON.stringify({ prompt })
             });
             const data = await res.json();
+            if (!res.ok || !data.url) {
+                const error = document.createElement("p");
+                error.textContent = data.error || "Failed to generate cover.";
+                output.appendChild(error);
+                continue;
+            }
             const img = document.createElement("img");
             img.src = data.url;
             img.width = 400;
-            document.getElementById("output").appendChild(img);
+            output.appendChild(img);
         }
     };
     reader.readAsText(fileInput.files[0]);

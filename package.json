@@ -1,0 +1,16 @@
+{
+  "name": "lunar-workbook-generator",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"No automated tests specified\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Simple lunar workbook cover generator",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
