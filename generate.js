@@ -29,7 +29,12 @@ async function handler(req, res) {
   }
 
   const result = await r.json();
-  res.status(200).json({ url: result.data[0].url });
+  const first = result && result.data && result.data.length ? result.data[0] : null;
+  if (!first || !first.url) {
+    console.error("OpenAI response missing image URL", result);
+    return res.status(500).json({ error: "Failed to generate image" });
+  }
+  res.status(200).json({ url: first.url });
 }
 
 module.exports = handler;
