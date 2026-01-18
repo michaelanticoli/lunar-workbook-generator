@@ -13,10 +13,6 @@ const rateLimits = new Map();
 
 app.use(express.json());
 
-app.get("/", rateLimit, (_req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-
 function rateLimit(req, res, next) {
   const ip = req.ip || req.socket?.remoteAddress;
   if (!ip) {
@@ -45,6 +41,10 @@ setInterval(() => {
     }
   }
 }, WINDOW_MS).unref();
+
+app.get("/", rateLimit, (_req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
 app.post("/api/generate", rateLimit, async (req, res) => {
   try {
