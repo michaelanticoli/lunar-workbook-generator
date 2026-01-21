@@ -13,6 +13,7 @@
 <script>
 document.getElementById("generate").addEventListener("click", async () => {
     const fileInput = document.getElementById("csvFile");
+    const output = document.getElementById("output");
     if (!fileInput.files.length) {
         alert("Please upload your CSV file first.");
         return;
@@ -23,7 +24,10 @@ document.getElementById("generate").addEventListener("click", async () => {
         const rows = csvData.split("\n").slice(1);
         for (const row of rows) {
             if (!row.trim()) continue;
-            const [title] = row.split(",");
+            const cells = row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+            const rawTitle = (cells[0] || "").trim();
+            const title = rawTitle.replace(/^"(.*)"$/, "$1").replace(/""/g, "\"");
+            if (!title) continue;
             const prompt = `Lunar Workbook Cover for ${title}, minimal, astrological style, high quality`;
             const res = await fetch("/api/generate", {
                 method: "POST",
@@ -31,10 +35,16 @@ document.getElementById("generate").addEventListener("click", async () => {
                 body: JSON.stringify({ prompt })
             });
             const data = await res.json();
+            if (!res.ok || !data.url) {
+                const error = document.createElement("p");
+                error.textContent = data.error || "Failed to generate cover.";
+                output.appendChild(error);
+                continue;
+            }
             const img = document.createElement("img");
             img.src = data.url;
             img.width = 400;
-            document.getElementById("output").appendChild(img);
+            output.appendChild(img);
         }
     };
     reader.readAsText(fileInput.files[0]);

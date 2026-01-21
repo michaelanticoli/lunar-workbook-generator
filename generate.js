@@ -1,5 +1,13 @@
-export default async function handler(req, res) {
-  const { prompt } = req.body;
+async function handler(req, res) {
+  const prompt = req.body && req.body.prompt;
+
+  if (!prompt) {
+    return res.status(400).json({ error: "Prompt is required" });
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(503).json({ error: "OPENAI_API_KEY is not configured" });
+  }
 
   const r = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
@@ -14,6 +22,19 @@ export default async function handler(req, res) {
     })
   });
 
+  if (!r.ok) {
+    const error = await r.text();
+    console.error("OpenAI request failed", error);
+    return res.status(500).json({ error: "Failed to generate image" });
+  }
+
   const result = await r.json();
-  res.status(200).json({ url: result.data[0].url });
+  const first = result?.data?.[0] || null;
+  if (!first || !first.url) {
+    console.error("OpenAI response missing image URL", result);
+    return res.status(500).json({ error: "Failed to generate image" });
+  }
+  res.status(200).json({ url: first.url });
 }
+
+module.exports = handler;
